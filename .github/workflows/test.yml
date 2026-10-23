@@ -1,0 +1,37 @@
+# 用途：在没有上游账号的情况下验证 SDK 自检、配置边界和原生失败清理。
+name: CTP offline checks
+
+on:
+  push:
+    branches: [main, codex/ctp-connector]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-24.04, macos-15, windows-2022]
+    runs-on: ${{ matrix.os }}
+    env:
+      PYTHONUTF8: "1"
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Install uv
+        uses: astral-sh/setup-uv@07a047e608db84b3d8c06cd9a7c7dcc9c355c18e # v10.3.2
+        with:
+          version: "0.11.26"
+          python-version: "3.12"
+          enable-cache: true
+      - name: Install dependencies
+        run: uv sync --frozen --all-groups --link-mode copy
+      - name: Run SDK self-check
+        run: uv run --frozen --no-sync python diagnose.py --sdk-only
+      - name: Run tests
+        run: uv run --frozen --no-sync python -m unittest discover -s tests -v
