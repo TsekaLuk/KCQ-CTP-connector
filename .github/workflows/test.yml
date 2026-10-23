@@ -31,6 +31,12 @@ jobs:
           enable-cache: true
       - name: Install dependencies
         run: uv sync --frozen --all-groups --link-mode copy
+      - name: Prepare Linux SDK locale
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install --yes locales
+          sudo localedef -i zh_CN -f GB18030 zh_CN.GB18030
       - name: Run SDK self-check
         run: uv run --frozen --no-sync python diagnose.py --sdk-only
       - name: Run tests

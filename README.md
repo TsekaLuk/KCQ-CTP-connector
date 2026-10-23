@@ -11,6 +11,17 @@
 源码仓库：[TsekaLuk/KCQ-CTP-connector](https://github.com/TsekaLuk/KCQ-CTP-connector)。
 没有 SimNow / TTS 账号也可以完成下面的离线检查；实际登录与市场行情仍待有账号的贡献者验收。
 
+Linux 绑定在导入时需要 `zh_CN.GB18030`。Ubuntu / Debian 先安装并生成该 locale：
+
+```sh
+sudo apt-get update
+sudo apt-get install --yes locales
+sudo localedef -i zh_CN -f GB18030 zh_CN.GB18030
+```
+
+自检会在导入原生绑定前检查已安装的 locale，缺失时返回可操作的诊断，不修改系统 locale。
+依赖锁定到官方 PyPI 制品，避免把开发机的区域镜像地址带进跨平台安装。
+
 ```sh
 uv sync --frozen --link-mode copy
 uv run --frozen --no-sync python diagnose.py --sdk-only

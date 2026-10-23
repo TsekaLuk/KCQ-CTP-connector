@@ -39,6 +39,8 @@ events(sequence INTEGER PRIMARY KEY, kind TEXT NOT NULL, channel TEXT NOT NULL,
 - profile / sourceId 一一对应：`simnow` / `ctp-simnow`、
   `simnow-replay` / `ctp-simnow-replay`、`openctp-replay` / `ctp-openctp-replay`。
 - 前两个 profile 使用 `ctp` 库；后者使用匹配版本的 `tts` 双库。
+- Linux 在导入绑定前通过 `locale -a` 检查 `zh_CN.GB18030`，不修改进程或系统 locale。
+- 依赖锁文件使用官方 PyPI 索引和制品 URL，不继承开发机的区域镜像。
 - 搜索请求：`{sourceId: string, keyword: string, limit: 1..500, assetClasses?: string[]}`。
 - V1 成功响应：`{data, requestId}`；失败响应：`{error:{code,message},requestId}`。
 - 目录只含当前完整查询返回的可交易具体期货；没有旧目录回退。
@@ -59,6 +61,7 @@ events(sequence INTEGER PRIMARY KEY, kind TEXT NOT NULL, channel TEXT NOT NULL,
 | 无效 TOML / profile / 认证字段 | `CONFIG_INVALID`；只公开字段位置 |
 | 标准库与 wheel RECORD 不符 / TTS 缓存不符 | `SDK_CHANNEL_MISMATCH`；不尝试连接 |
 | 无可用 SDK 制品 | `SDK_UNAVAILABLE` |
+| Linux 缺少 `zh_CN.GB18030` 或无法查询 locale | `SDK_UNAVAILABLE`，不导入原生绑定 |
 | 本机 Mac 选择 TTS | `SDK_CHANNEL_MISMATCH`，明确未支持 |
 | 原生请求发送返回非零 | `REQUEST_REJECTED`，保留数值码 |
 | 异步上游错误 | `UPSTREAM_ERROR`，不公开原始文本 |

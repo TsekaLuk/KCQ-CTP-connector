@@ -5,10 +5,31 @@ import hashlib
 from importlib.metadata import PackageNotFoundError, distribution, version
 from pathlib import Path
 import platform
+import subprocess
 import tempfile
 
 from connector.config import SDK_VERSION
 from connector.errors import Code, ConnectorError, Failure
+
+LINUX_SDK_LOCALE = "zh_CN.GB18030"
+
+
+def verify_linux_locale() -> None:
+    """导入 Linux 绑定前只读检查 locale，避免 C++ 静态初始化直接终止进程。"""
+    if platform.system() != "Linux":
+        return
+    try:
+        result = subprocess.run(
+            ["locale", "-a"], capture_output=True, text=True, check=True, timeout=5,
+        )
+    except (OSError, subprocess.SubprocessError):
+        raise ConnectorError(Failure(
+            Code.SDK_UNAVAILABLE, "无法查询 Linux locale；请安装 locales 并生成 zh_CN.GB18030。",
+        )) from None
+    if LINUX_SDK_LOCALE.casefold() not in {name.strip().casefold() for name in result.stdout.splitlines()}:
+        raise ConnectorError(Failure(
+            Code.SDK_UNAVAILABLE, "Linux SDK 需要 zh_CN.GB18030；请按 README 生成该 locale 后重试。",
+        ))
 
 
 def digest(path: Path) -> bytes:
@@ -58,6 +79,7 @@ def verify_channel(channel: str) -> None:
 def inspect_sdk(channel: str = "ctp", exercise: bool = False) -> dict[str, str | bool]:
     """核对后导入绑定；可离线创建和释放 API，不连接任何前置。"""
     try:
+        verify_linux_locale()
         verify_channel(channel)
         from openctp_ctp import mdapi, tdapi
 
