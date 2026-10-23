@@ -1,0 +1,19 @@
+# 用途：提供本地配置模板；复制为被 Git 忽略的 config.toml 后填写。
+# 前置地址必须从所选环境的当前官方说明取得，不在代码中内置旧地址。
+profile = "simnow"
+sdk_channel = "ctp"
+md_fronts = ["tcp://REPLACE_WITH_CURRENT_MD_FRONT:PORT"]
+td_fronts = ["tcp://REPLACE_WITH_CURRENT_TD_FRONT:PORT"]
+broker_id = ""
+user_id = ""
+password = ""
+# 需要认证时显式改为 true，并填写 app_id / auth_code。
+auth_required = false
+app_id = ""
+auth_code = ""
+# 首次保持空数组，先查询真实合约目录，再填写原始 InstrumentID。
+recording_symbols = []
+data_dir = "data"
+queue_capacity = 20000
+bind_host = "127.0.0.1"
+port = 8093

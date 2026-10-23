@@ -1,0 +1,8 @@
+# 用途：隔离账号、原生流文件、本地录制及开发产物。
+.venv/
+__pycache__/
+*.pyc
+config.toml
+.env
+data/
+.codegraph/
