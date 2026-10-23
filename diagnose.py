@@ -38,24 +38,19 @@ def main() -> int:
             if runtime.snapshot().failure is not None or runtime.diagnostic_complete():
                 break
             sleep(0.1)
-        report = runtime.report()
-        complete = report["diagnosticComplete"]
-        if not complete and report["failure"] is None:
+        if not runtime.diagnostic_complete() and runtime.snapshot().failure is None:
             stop_reason = Failure(
                 Code.DIAGNOSIS_TIMEOUT,
                 "观察时间内未完成登录、目录或指定合约的快照接收；检查前置、账号及交易时段。",
             )
-        if runtime.snapshot().catalog_ready:
-            report["instruments"] = [asdict(item) for item in runtime.snapshot().instruments]
     finally:
         runtime.stop(stop_reason)
-    if runtime.snapshot().failure is not None:
-        report["failure"] = asdict(runtime.snapshot().failure)
-        complete = False
-    report["diagnosticComplete"] = complete
-    report["resourcesReleased"] = runtime.snapshot().resources_released
+    # 等待 worker 收尾后再读取报告，避免慢初始化时输出关闭前的过期 SDK 状态。
+    report = runtime.report()
+    if report["catalogReady"]:
+        report["instruments"] = [asdict(item) for item in runtime.snapshot().instruments]
     print(json.dumps(report, ensure_ascii=False, indent=2))
-    return 0 if complete else 1
+    return 0 if report["diagnosticComplete"] else 1
 
 
 if __name__ == "__main__":

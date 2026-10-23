@@ -1,5 +1,6 @@
 """用途：验证配置脱敏、真实 SDK 字段复制、录制持久化和无配置 API。"""
 
+from contextlib import closing
 from dataclasses import asdict
 import json
 from pathlib import Path
@@ -107,7 +108,7 @@ class BoundaryTests(unittest.IsolatedAsyncioTestCase):
             store.append(Event(Kind.CONNECTED, "md", 1234567890123456789))
             store.append(Event(Kind.STOPPED, "local", 1234567890123456790))
             store.close()
-            with sqlite3.connect(path) as connection:
+            with closing(sqlite3.connect(path)) as connection:
                 self.assertEqual(
                     connection.execute("SELECT run_id, profile FROM recording").fetchone(),
                     ("run-one", "openctp-replay"),
@@ -138,7 +139,7 @@ class BoundaryTests(unittest.IsolatedAsyncioTestCase):
             self.assertTrue(report["sdk"]["libraryFingerprintsVerified"])
             self.assertIn(report["failure"]["code"], (Code.DIAGNOSIS_TIMEOUT, Code.DISCONNECTED))
             database = next((Path(directory) / "data").rglob("recording.sqlite3"))
-            with sqlite3.connect(database) as connection:
+            with closing(sqlite3.connect(database)) as connection:
                 kinds = [row[0] for row in connection.execute("SELECT kind FROM events ORDER BY sequence")]
                 self.assertIn(Kind.GAP, kinds)
                 self.assertEqual(kinds[-1], Kind.STOPPED)

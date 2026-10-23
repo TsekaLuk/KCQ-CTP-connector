@@ -51,6 +51,7 @@ events(sequence INTEGER PRIMARY KEY, kind TEXT NOT NULL, channel TEXT NOT NULL,
 - 只有每个配置合约均确认订阅并收到快照，行情诊断才通过；
   空订阅列表只检查登录和目录，`marketDataVerified` 仍为 false。
 - 每个 run 的事件按接收顺序追加；回放时钟倒退也不覆盖旧事件。
+- CLI 在等待 worker 关闭后读取最终报告，SDK、失败与资源状态来自收尾后的诊断。
 - 配置、SDK flow、venv 和录制文件均不提交。
 
 ## 4. Validation & Error Matrix
